@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public static double findPrice(String url){
+    /*public static double findPrice(String url){
         Document doc = null;
         try {
             doc = Jsoup.connect(url).get();
@@ -178,9 +178,9 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.i("INFO", "ZZZZZZZZZZZZ price = " + newPrice);
         return Double.parseDouble(String.valueOf(newPrice));
-    }
+    }*/
 
-    public static double findPrice2(String url){
+    /*public static double findPrice2(String url){
         Document doc = null;
         try {
             doc = Jsoup.connect(url).get();
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return Integer.parseInt(String.valueOf(newPrice));
-    }
+    }*/
 
     public static double findPriceFlip(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
@@ -605,7 +605,7 @@ public class MainActivity extends AppCompatActivity {
     public void stopFunc(View view) {
         isStarted = false;
 
-        mp.cancel(false);
+        //mp.cancel(false);
         mp = null;
 
         Log.i("INFO", "Stop pressed.");
