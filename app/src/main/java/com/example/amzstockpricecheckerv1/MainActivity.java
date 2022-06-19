@@ -604,8 +604,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void stopFunc(View view) {
         isStarted = false;
-
-        //mp.cancel(false);
+        mp.cancel(true);
         mp = null;
 
         Log.i("INFO", "Stop pressed.");
