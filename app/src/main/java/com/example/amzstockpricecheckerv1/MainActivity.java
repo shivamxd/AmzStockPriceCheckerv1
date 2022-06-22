@@ -32,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean stockVar;
     public double finalPrice;
     public boolean isStarted;
-    MainProcess mp;
+    //MainProcess mp;
+    MainThread mt;
 
 
     //this function checks if the character passed to it is a part of a number
@@ -350,7 +351,133 @@ public class MainActivity extends AppCompatActivity {
         }
     }*/
 
-    private class MainProcess extends AsyncTask<Void, Void, Void> {
+    private class MainThread extends Thread {
+        public void run() {
+            EditText url = (EditText) findViewById(R.id.URL);
+            EditText price = (EditText) findViewById(R.id.price);
+
+            double priceDouble = Double.parseDouble(price.getText().toString());
+
+            @SuppressLint("UseSwitchCompatOrMaterialCode") Switch sw = (Switch) findViewById(R.id.switch1);
+
+            boolean isFlip = false;
+
+            if (url.getText().toString().charAt(12) == 'f') {
+                isFlip = true;
+            }
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel("PriceStock", "PriceStock", NotificationManager.IMPORTANCE_DEFAULT);
+                NotificationManager manager = getSystemService(NotificationManager.class);
+                manager.createNotificationChannel(channel);
+            }
+
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "PriceStock");
+            builder.setSmallIcon(R.drawable.logo);
+            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+            builder.setAutoCancel(true);
+
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
+
+
+            if (sw.isChecked()) {
+                while (true) {
+                    if (!isStarted) {
+                        break;
+                    }
+                    if (isFlip) {
+                        stockVar = inStockFlip(url.getText().toString());
+                    } else {
+                        stockVar = inStockAmz(url.getText().toString());
+                    }
+                    if (stockVar) {
+                        Log.i("INFO", "In stock");
+                        builder.setContentTitle("The item is back in stock");
+                        builder.setContentText("Tap to open the product page.");
+                        notificationManager.notify(1, builder.build());
+                        isStarted = false;
+                        break;
+                    } else {
+                        Log.i("INFO", "Not in stock");
+                        try {
+                            Thread.sleep(120000);
+                        }
+                        catch (InterruptedException ignored) {
+
+                        }
+
+                    }
+                }
+                /*CheckStock cs = new CheckStock();
+                cs.execute();*/
+
+            } else {
+                while (true) {
+                    if (!isStarted) {
+                        break;
+                    }
+                    if (isFlip) {
+                        stockVar = inStockFlip(url.getText().toString());
+                    } else {
+                        stockVar = inStockAmz(url.getText().toString());
+                    }
+                    if (stockVar) {
+                        try {
+                            if (isFlip) {
+                                finalPrice = findPriceFlip(url.getText().toString());
+                            } else {
+                                finalPrice = findPriceAmz(url.getText().toString());
+                            }
+                        } catch (IOException e) {
+                            //e.printStackTrace();
+                        }
+                    } else {
+                        finalPrice = -1;
+                    }
+                    if (stockVar) {
+                        if (finalPrice >= 0) {
+                            if (finalPrice <= priceDouble) {
+                                Log.i("VALUES", "Price is low. New price = " + finalPrice);
+                                builder.setContentTitle("Price is low.");
+                                builder.setContentText("Current price = " + finalPrice);
+                                notificationManager.notify(1, builder.build());
+                                isStarted = false;
+                                break;
+                            } else {
+                                Log.i("VALUES", "Price is high. Price = " + finalPrice);
+                                Log.i("INFO", "Waiting....");
+                                try {
+                                    Thread.sleep(120000);
+                                }
+                                catch (InterruptedException ignored) {
+
+                                }
+                            }
+                        } else {
+                            Log.i("INFO", "Out of stock");
+                            Log.i("INFO", "Waiting....");
+                            try {
+                                Thread.sleep(120000);
+                            }
+                            catch (InterruptedException ignored) {
+
+                            }
+                        }
+                    }
+                }
+                /*PriceFind pf = new PriceFind();
+                pf.execute();*/
+
+            }
+
+
+
+        }
+    }
+
+    /*private class MainProcess extends AsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute() {
             // super.OnPreExecute();
@@ -373,14 +500,17 @@ public class MainActivity extends AppCompatActivity {
                 isFlip = true;
             }
 
-        /*CheckStock cs = new CheckStock();
+
+
+
+        *//*CheckStock cs = new CheckStock();
         cs.execute();
 
         if (stockVar) {
             Log.i("INFO", "In stock");
         } else {
             Log.i("INFO", "Not in stock");
-        }*/
+        }*//*
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -401,11 +531,11 @@ public class MainActivity extends AppCompatActivity {
 
             //test code
 
-            /*Intent resultIntent = new Intent(Intent.ACTION_VIEW);
+            *//*Intent resultIntent = new Intent(Intent.ACTION_VIEW);
             resultIntent.setData(Uri.parse(url.getText().toString()));
 
             PendingIntent pending = PendingIntent.getActivity(MainActivity.this, 1, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(pending);*/
+            builder.setContentIntent(pending);*//*
 
 
 
@@ -442,8 +572,8 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 }
-                /*CheckStock cs = new CheckStock();
-                cs.execute();*/
+                *//*CheckStock cs = new CheckStock();
+                cs.execute();*//*
 
             } else {
                 while (true) {
@@ -499,8 +629,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
-                /*PriceFind pf = new PriceFind();
-                pf.execute();*/
+                *//*PriceFind pf = new PriceFind();
+                pf.execute();*//*
 
             }
 
@@ -511,7 +641,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
 
         }
-    }
+    }*/
 
     public void startFunc(View view) {
 
@@ -587,9 +717,13 @@ public class MainActivity extends AppCompatActivity {
 
         isStarted = true;
 
-        mp = new MainProcess();
+        //mp = new MainProcess();
 
-        mp.execute();
+        //mp.execute();
+
+        mt = new MainThread();
+        mt.start();
+
 
 
 
@@ -604,8 +738,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void stopFunc(View view) {
         isStarted = false;
-        mp.cancel(true);
-        mp = null;
+        //mp.cancel(true);
+        //mp = null;
+        mt.interrupt();
+
+
 
         Log.i("INFO", "Stop pressed.");
     }
