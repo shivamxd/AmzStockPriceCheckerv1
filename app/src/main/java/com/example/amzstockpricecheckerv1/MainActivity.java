@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean isStarted;
     //MainProcess mp;
     MainThread mt;
+    //String statusString = "Stopped";
+
 
 
     //this function checks if the character passed to it is a part of a number
@@ -289,6 +292,11 @@ public class MainActivity extends AppCompatActivity {
 
         Log.i("INFO", "This app was created by Shivam. Twitter - @shivam_ggwp");
 
+
+
+
+
+
         //EditText outputFinal = (EditText) findViewById(R.id.output);
 
 
@@ -356,7 +364,9 @@ public class MainActivity extends AppCompatActivity {
             EditText url = (EditText) findViewById(R.id.URL);
             EditText price = (EditText) findViewById(R.id.price);
 
-            double priceDouble = Double.parseDouble(price.getText().toString());
+            double priceDouble = 99999999;
+
+
 
             @SuppressLint("UseSwitchCompatOrMaterialCode") Switch sw = (Switch) findViewById(R.id.switch1);
 
@@ -388,9 +398,19 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                     if (isFlip) {
-                        stockVar = inStockFlip(url.getText().toString());
+                        try {
+                            stockVar = inStockFlip(url.getText().toString());
+                        }
+                        catch (Exception e) {
+                            return;
+                        }
                     } else {
-                        stockVar = inStockAmz(url.getText().toString());
+                        try {
+                            stockVar = inStockAmz(url.getText().toString());
+                        }
+                        catch (Exception e) {
+                            return;
+                        }
                     }
                     if (stockVar) {
                         Log.i("INFO", "In stock");
@@ -414,23 +434,48 @@ public class MainActivity extends AppCompatActivity {
                 cs.execute();*/
 
             } else {
+                try {
+                    priceDouble = Double.parseDouble(price.getText().toString());
+                } catch (Exception e) {
+                    return;
+                }
                 while (true) {
                     if (!isStarted) {
                         break;
                     }
                     if (isFlip) {
-                        stockVar = inStockFlip(url.getText().toString());
+                        try {
+                            stockVar = inStockFlip(url.getText().toString());
+                        }
+                        catch (Exception e) {
+                            return;
+                        }
                     } else {
-                        stockVar = inStockAmz(url.getText().toString());
+                        try {
+                            stockVar = inStockAmz(url.getText().toString());
+                        }
+                        catch (Exception e) {
+                            return;
+                        }
                     }
                     if (stockVar) {
                         try {
                             if (isFlip) {
-                                finalPrice = findPriceFlip(url.getText().toString());
+                                try {
+                                    finalPrice = findPriceFlip(url.getText().toString());
+                                }
+                                catch (Exception e) {
+                                    return;
+                                }
                             } else {
-                                finalPrice = findPriceAmz(url.getText().toString());
+                                try {
+                                    finalPrice = findPriceAmz(url.getText().toString());
+                                }
+                                catch (Exception e) {
+                                    return;
+                                }
                             }
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             //e.printStackTrace();
                         }
                     } else {
@@ -729,6 +774,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
         //Log.i("Values", url.getText().toString());
         //Log.i("Values", price.getText().toString());
 
@@ -741,6 +787,7 @@ public class MainActivity extends AppCompatActivity {
         //mp.cancel(true);
         //mp = null;
         mt.interrupt();
+
 
 
 
