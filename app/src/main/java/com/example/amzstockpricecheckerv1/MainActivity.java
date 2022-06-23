@@ -366,15 +366,12 @@ public class MainActivity extends AppCompatActivity {
 
             double priceDouble = 99999999;
 
-
+            boolean isFlip;
 
             @SuppressLint("UseSwitchCompatOrMaterialCode") Switch sw = (Switch) findViewById(R.id.switch1);
 
-            boolean isFlip = false;
 
-            if (url.getText().toString().charAt(12) == 'f') {
-                isFlip = true;
-            }
+
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -393,6 +390,11 @@ public class MainActivity extends AppCompatActivity {
 
 
             if (sw.isChecked()) {
+                try {
+                    isFlip = url.getText().toString().charAt(12) == 'f';
+                } catch (Exception e) {
+                    return;
+                }
                 while (true) {
                     if (!isStarted) {
                         break;
@@ -434,6 +436,11 @@ public class MainActivity extends AppCompatActivity {
                 cs.execute();*/
 
             } else {
+                try {
+                    isFlip = url.getText().toString().charAt(12) == 'f';
+                } catch (Exception e) {
+                    return;
+                }
                 try {
                     priceDouble = Double.parseDouble(price.getText().toString());
                 } catch (Exception e) {
