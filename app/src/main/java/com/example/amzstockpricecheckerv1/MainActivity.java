@@ -37,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     //MainProcess mp;
     MainThread mt;
     //String statusString = "Stopped";
+    String stoppedString = "Stopped";
+    String startedString = "Started";
+
 
 
 
@@ -251,6 +254,42 @@ public class MainActivity extends AppCompatActivity {
     public static double findPriceAmz(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
         String price = doc.getElementsByClass("a-price-whole").outerHtml();
+        Log.i("INFO", "PRICE IS EMPTYYYYYYYY");
+        Log.i("INFO", "price a price whole = " + price);
+        //System.out.println("price = " + price);
+        //System.out.println(title);
+        if (price.isEmpty()) {
+            price = doc.getElementsByClass("a-offscreen").outerHtml();
+            Log.i("INFO", "off screen price = " + price);
+        }
+        StringBuilder newPrice = new StringBuilder();
+
+        boolean numFound = false;
+
+        for (int i = 0; i < price.length(); i++) {
+
+            if (numFound && price.charAt(i) == '<') {
+                break;
+            }
+
+            if (isNumber(price.charAt(i))) {
+                if (price.charAt(i) == ',') {
+                    continue;
+                }
+                newPrice.append(price.charAt(i));
+                numFound = true;
+            }
+        }
+        Log.i("INFO", "33333333333 price = " + String.valueOf(newPrice));
+        if (String.valueOf(newPrice).isEmpty()) {
+            return 99999999;
+        }
+        return Double.parseDouble(String.valueOf(newPrice));
+    }
+
+    public static double findPriceAmz2(String url) throws IOException {
+        Document doc = Jsoup.connect(url).get();
+        String price = doc.getElementsByClass("a-price-whole").outerHtml();
         Log.i("INFO", "price a price whole = " + price);
         //System.out.println("price = " + price);
         //System.out.println(title);
@@ -362,6 +401,13 @@ public class MainActivity extends AppCompatActivity {
 
     private class MainThread extends Thread {
         public void run() {
+
+            try {
+                ((TextView) findViewById(R.id.status)).setText(startedString);
+            } catch (Exception ignored) {
+
+            }
+
             EditText url = (EditText) findViewById(R.id.URL);
             EditText price = (EditText) findViewById(R.id.price);
 
@@ -401,11 +447,20 @@ public class MainActivity extends AppCompatActivity {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
 
 
+
+            String statusString = "...";
+
             if (sw.isChecked()) {
                 try {
                     isFlip = url.getText().toString().charAt(12) == 'f';
                 } catch (Exception e) {
                     return;
+                }
+                statusString = "Started. Checking Stock.";
+                try {
+                    ((TextView) findViewById(R.id.status)).setText(statusString);
+                } catch (Exception ignored) {
+
                 }
                 while (true) {
                     if (!isStarted) {
@@ -432,8 +487,19 @@ public class MainActivity extends AppCompatActivity {
                         builder.setContentText("Tap to open the product page");
                         notificationManager.notify(1, builder.build());
                         isStarted = false;
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(stoppedString);
+                        } catch (Exception ignored) {
+
+                        }
                         break;
                     } else {
+                        statusString = "Product Out Of Stock. We will keep checking.";
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(statusString);
+                        } catch (Exception ignored) {
+
+                        }
                         Log.i("INFO", "Not in stock");
                         try {
                             Thread.sleep(120000);
@@ -457,6 +523,12 @@ public class MainActivity extends AppCompatActivity {
                     priceDouble = Double.parseDouble(price.getText().toString());
                 } catch (Exception e) {
                     return;
+                }
+                statusString = "Checking price.";
+                try {
+                    ((TextView) findViewById(R.id.status)).setText(statusString);
+                } catch (Exception ignored) {
+
                 }
                 while (true) {
                     if (!isStarted) {
@@ -507,9 +579,21 @@ public class MainActivity extends AppCompatActivity {
                                 builder.setContentTitle("Price is low at " + finalPrice);
                                 builder.setContentText("Tap to open the product page");
                                 notificationManager.notify(1, builder.build());
+                                startedString = "Stopped";
+                                try {
+                                    ((TextView) findViewById(R.id.status)).setText(statusString);
+                                } catch (Exception ignored) {
+
+                                }
                                 isStarted = false;
                                 break;
                             } else {
+                                statusString = "Price is high. We will keep checking.";
+                                try {
+                                    ((TextView) findViewById(R.id.status)).setText(statusString);
+                                } catch (Exception ignored) {
+
+                                }
                                 Log.i("VALUES", "Price is high. Price = " + finalPrice);
                                 Log.i("INFO", "Waiting....");
                                 try {
@@ -536,7 +620,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
+            startedString = "Stopped";
+            try {
+                ((TextView) findViewById(R.id.status)).setText(statusString);
+            } catch (Exception ignored) {
 
+            }
+            isStarted = false;
 
         }
     }
@@ -797,7 +887,7 @@ public class MainActivity extends AppCompatActivity {
         //Log.i("Values", url.getText().toString());
         //Log.i("Values", price.getText().toString());
 
-        
+
 
     }
 
@@ -806,6 +896,12 @@ public class MainActivity extends AppCompatActivity {
         //mp.cancel(true);
         //mp = null;
         mt.interrupt();
+
+        try {
+            ((TextView) findViewById(R.id.status)).setText(stoppedString);
+        } catch (Exception ignored) {
+
+        }
 
 
 
