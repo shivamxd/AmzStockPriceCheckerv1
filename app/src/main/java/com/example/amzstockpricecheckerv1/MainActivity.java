@@ -798,7 +798,13 @@ public class MainActivity extends AppCompatActivity {
         isStarted = false;
         //mp.cancel(true);
         //mp = null;
-        mt.interrupt();
+        try {
+            mt.interrupt();
+        }
+        catch (Exception ignored) {
+
+        }
+
 
         try {
             ((TextView) findViewById(R.id.status)).setText(stoppedString);
