@@ -367,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
 
             Uri linkToProduct = Uri.parse(url.getText().toString());
             Intent openProductPage = new Intent(Intent.ACTION_VIEW);
-            openProductPage.setData(linkToProduct);
+            openProductPage.setData(linkToProduct); //this opens the product url
 
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
             stackBuilder.addNextIntentWithParentStack(openProductPage);
