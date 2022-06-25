@@ -9,6 +9,7 @@ import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -364,6 +365,16 @@ public class MainActivity extends AppCompatActivity {
             EditText url = (EditText) findViewById(R.id.URL);
             EditText price = (EditText) findViewById(R.id.price);
 
+            Uri linkToProduct = Uri.parse(url.getText().toString());
+            Intent openProductPage = new Intent(Intent.ACTION_VIEW);
+            openProductPage.setData(linkToProduct);
+
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(MainActivity.this);
+            stackBuilder.addNextIntentWithParentStack(openProductPage);
+
+            PendingIntent openProductPagePendingIntent = stackBuilder.getPendingIntent(1, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+
             double priceDouble = 99999999;
 
             boolean isFlip;
@@ -385,6 +396,7 @@ public class MainActivity extends AppCompatActivity {
             builder.setSmallIcon(R.drawable.logo);
             builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
             builder.setAutoCancel(true);
+            builder.setContentIntent(openProductPagePendingIntent);
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
 
@@ -417,7 +429,7 @@ public class MainActivity extends AppCompatActivity {
                     if (stockVar) {
                         Log.i("INFO", "In stock");
                         builder.setContentTitle("The item is back in stock");
-                        builder.setContentText("Tap to open the product page.");
+                        builder.setContentText("Tap to open the product page");
                         notificationManager.notify(1, builder.build());
                         isStarted = false;
                         break;
@@ -492,8 +504,8 @@ public class MainActivity extends AppCompatActivity {
                         if (finalPrice >= 0) {
                             if (finalPrice <= priceDouble) {
                                 Log.i("VALUES", "Price is low. New price = " + finalPrice);
-                                builder.setContentTitle("Price is low.");
-                                builder.setContentText("Current price = " + finalPrice);
+                                builder.setContentTitle("Price is low at " + finalPrice);
+                                builder.setContentText("Tap to open the product page");
                                 notificationManager.notify(1, builder.build());
                                 isStarted = false;
                                 break;
