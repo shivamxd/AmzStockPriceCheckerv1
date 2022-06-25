@@ -1,5 +1,3 @@
 <resources>
     <string name="app_name">AmzStockPriceCheckerv1</string>
-    <string name="stopped">Stopped</string>
-    <string name="started">Started</string>
 </resources>
