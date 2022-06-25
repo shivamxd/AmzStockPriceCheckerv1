@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     //String statusString = "Stopped";
     String stoppedString = "Stopped";
     String startedString = "Started";
+    public String statusString = "...";
 
 
 
@@ -73,6 +74,15 @@ public class MainActivity extends AppCompatActivity {
         {
 
         }
+
+        if (avail.isEmpty()) {
+            try {
+                avail = doc.getElementsByClass("a-section a-spacing-base }").outerHtml();
+            } catch (Exception ignored) {
+
+            }
+        }
+        System.out.println("Avail = " + avail);
         //System.out.println(avail);
 
 
@@ -254,11 +264,12 @@ public class MainActivity extends AppCompatActivity {
     public static double findPriceAmz(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
         String price = doc.getElementsByClass("a-price-whole").outerHtml();
-        Log.i("INFO", "PRICE IS EMPTYYYYYYYY");
+
         Log.i("INFO", "price a price whole = " + price);
         //System.out.println("price = " + price);
         //System.out.println(title);
         if (price.isEmpty()) {
+            Log.i("INFO", "PRICE IS EMPTYYYYYYYY");
             price = doc.getElementsByClass("a-offscreen").outerHtml();
             Log.i("INFO", "off screen price = " + price);
         }
@@ -287,40 +298,6 @@ public class MainActivity extends AppCompatActivity {
         return Double.parseDouble(String.valueOf(newPrice));
     }
 
-    public static double findPriceAmz2(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
-        String price = doc.getElementsByClass("a-price-whole").outerHtml();
-        Log.i("INFO", "price a price whole = " + price);
-        //System.out.println("price = " + price);
-        //System.out.println(title);
-        if (price.isEmpty()) {
-            price = doc.getElementsByClass("a-offscreen").outerHtml();
-            Log.i("INFO", "off screen price = " + price);
-        }
-        StringBuilder newPrice = new StringBuilder();
-
-        boolean numFound = false;
-
-        for (int i = 0; i < price.length(); i++) {
-
-            if (numFound && price.charAt(i) == '<') {
-                break;
-            }
-
-            if (isNumber(price.charAt(i))) {
-                if (price.charAt(i) == ',') {
-                    continue;
-                }
-                newPrice.append(price.charAt(i));
-                numFound = true;
-            }
-        }
-        Log.i("INFO", "33333333333 price = " + String.valueOf(newPrice));
-        if (String.valueOf(newPrice).isEmpty()) {
-            return 99999999;
-        }
-        return Double.parseDouble(String.valueOf(newPrice));
-    }
 
 
     @Override
@@ -448,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-            String statusString = "...";
+
 
             if (sw.isChecked()) {
                 try {
@@ -799,73 +776,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startFunc(View view) {
 
-        /*EditText url = (EditText) findViewById(R.id.URL);
-        EditText price = (EditText) findViewById(R.id.price);
 
-        double priceInt = Double.parseDouble(price.getText().toString());
-
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch sw = (Switch) findViewById(R.id.switch1);
-
-        *//*CheckStock cs = new CheckStock();
-        cs.execute();
-
-        if (stockVar) {
-            Log.i("INFO", "In stock");
-        } else {
-            Log.i("INFO", "Not in stock");
-        }*//*
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("PriceStock", "PriceStock", NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
-        }
-
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "PriceStock");
-        builder.setSmallIcon(R.drawable.logo);
-        builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        builder.setAutoCancel(true);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
-
-
-
-
-
-
-
-
-        if (sw.isChecked()) {
-            CheckStock cs = new CheckStock();
-            cs.execute();
-            if (stockVar) {
-                Log.i("INFO", "In stock");
-                builder.setContentTitle("The item is back in stock");
-                builder.setContentText("Tap to open the product page.");
-                notificationManager.notify(1, builder.build());
-            } else {
-                Log.i("INFO", "Not in stock");
-            }
-        } else {
-            PriceFind pf = new PriceFind();
-            pf.execute();
-            if (stockVar) {
-                if (finalPrice >= 0) {
-                    if (finalPrice <= priceInt) {
-                        Log.i("VALUES", "Price is low. New price = " + finalPrice);
-                        builder.setContentTitle("Price is low.");
-                        builder.setContentText("Current price = " + finalPrice);
-                        notificationManager.notify(1, builder.build());
-                    } else {
-                        Log.i("VALUES", "Price is high. Price = " + finalPrice);
-                    }
-                } else {
-                    Log.i("INFO", "Out of stock");
-                }
-            }
-        }*/
 
         Log.i("INFO", "start pressed");
 
@@ -878,14 +789,6 @@ public class MainActivity extends AppCompatActivity {
         mt = new MainThread();
         mt.start();
 
-
-
-
-
-
-
-        //Log.i("Values", url.getText().toString());
-        //Log.i("Values", price.getText().toString());
 
 
 
