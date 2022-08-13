@@ -31,9 +31,11 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    public boolean stockVar = false;
-    public double finalPrice;
+    public boolean inStockVar = false;
+    public double priceFromWebsite = 999999999;
     public boolean isStarted;
+    public double priceFromApp = 999999999;
+    public boolean linkIsForFlipkart = false;
     //MainProcess mp;
     MainThread mt;
     //String statusString = "Stopped";
@@ -378,13 +380,10 @@ public class MainActivity extends AppCompatActivity {
 
     private class MainThread extends Thread {
         public void run() {
-
-
-            statusString = "Started.";
+            statusString = "Stopped.";
             try {
                 ((TextView) findViewById(R.id.status)).setText(statusString);
             } catch (Exception ignored) {
-
             }
 
             EditText url = (EditText) findViewById(R.id.URL);
@@ -400,11 +399,10 @@ public class MainActivity extends AppCompatActivity {
             PendingIntent openProductPagePendingIntent = stackBuilder.getPendingIntent(1, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 
-            double priceDouble = 99999999;
-
-            boolean isFlip;
-
             @SuppressLint("UseSwitchCompatOrMaterialCode") Switch sw = (Switch) findViewById(R.id.switch1);
+
+
+
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -423,173 +421,157 @@ public class MainActivity extends AppCompatActivity {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
 
 
-            //check if the link is for amazon or flipkart
-            try {
-                isFlip = url.getText().toString().charAt(12) == 'f';
-            } catch (Exception e) {
-                statusString = "Error. Check URL.";
+
+            if (sw.isChecked()) {
+
+
+                try {
+                    linkIsForFlipkart = url.getText().toString().charAt(12) == 'f';
+                } catch (Exception ignored) {
+                }
+
+                statusString = "Started. Checking Stock.";
                 try {
                     ((TextView) findViewById(R.id.status)).setText(statusString);
                 } catch (Exception ignored) {
-
                 }
-                return;
-            }
 
-            //set the status string
-            if (sw.isChecked()) {
-                statusString = "Checking for stock.";
+                while (true) {
+
+                    if (!isStarted) {
+                        break;
+                    }
+
+                    if (linkIsForFlipkart) {
+                        try {
+                            inStockVar = inStockFlip(url.getText().toString());
+                        } catch (Exception ignored) {
+                        }
+                    } else {
+                        try {
+                            inStockVar = inStockAmz(url.getText().toString());
+                        } catch (Exception ignored) {
+                        }
+                    }
+
+                    if (inStockVar) {
+                        Log.i("INFO", "In stock");
+                        builder.setContentTitle("The item is back in stock");
+                        builder.setContentText("Tap to open the product page");
+                        notificationManager.notify(1, builder.build());
+                        statusString = "Product is in stock.";
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(statusString);
+                        } catch (Exception ignored) {
+                        }
+                        break;
+                    } else {
+                        statusString = "Product Out Of Stock. We will keep checking.";
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(statusString);
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            Thread.sleep(120000);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                }
             } else {
-                statusString = "Checking the price.";
-            }
-            try {
-                ((TextView) findViewById(R.id.status)).setText(statusString);
-            } catch (Exception ignored) {
+                while (true) {
+                    if (!isStarted) {
+                        break;
+                    }
 
-            }
-
-            //check stock
-            while (true) {
-                if (isFlip) {
                     try {
-                        stockVar = inStockFlip(url.getText().toString());
-                    }
-                    catch (Exception e) {
-                        try {
-                            Thread.sleep(5000);
-                        }
-                        catch (InterruptedException ignored) {
-
-                        }
-                        continue;
-                    }
-                } else {
-                    try {
-                        stockVar = inStockAmz(url.getText().toString());
-                    }
-                    catch (Exception e) {
-                        try {
-                            Thread.sleep(5000);
-                        }
-                        catch (InterruptedException ignored) {
-
-                        }
-                        continue;
-                    }
-                }
-                if (stockVar) {
-                    Log.i("INFO", "In stock");
-                    builder.setContentTitle("The item is back in stock");
-                    builder.setContentText("Tap to open the product page");
-                    notificationManager.notify(1, builder.build());
-                    try {
-                        statusString = "Item is in stock.";
-                        ((TextView) findViewById(R.id.status)).setText(statusString);
+                        linkIsForFlipkart = url.getText().toString().charAt(12) == 'f';
                     } catch (Exception ignored) {
-
                     }
-                    break;
-                }
-                //if out of stock
-                statusString = "Product Out Of Stock. We will keep checking.";
-                try {
-                    ((TextView) findViewById(R.id.status)).setText(statusString);
-                } catch (Exception ignored) {
 
-                }
-                Log.i("INFO", "Not in stock");
-                try {
-                    Thread.sleep(120000);
-                }
-                catch (InterruptedException ignored) {
-
-                }
-            }
-
-            if (sw.isChecked()) {
-                return;
-            }
-
-            try {
-                priceDouble = Double.parseDouble(price.getText().toString());
-            } catch (Exception e) {
-                try {
-                    statusString = "Error. Make sure the price is a number.";
-                    ((TextView) findViewById(R.id.status)).setText(statusString);
-                } catch (Exception ignored) {
-
-                }
-                return;
-            }
-
-            statusString = "Checking price.";
-            try {
-                ((TextView) findViewById(R.id.status)).setText(statusString);
-            } catch (Exception ignored) {
-
-            }
-
-            while (true) {
-
-                if (isFlip) {
-                    try {
-                        finalPrice = findPriceFlip(url.getText().toString());
-                    }
-                    catch (Exception e) {
-                        try {
-                            Thread.sleep(5000);
-                        }
-                        catch (InterruptedException ignored) {
-
-                        }
-                        continue;
-                    }
-                } else {
-                    try {
-                        finalPrice = findPriceAmz(url.getText().toString());
-                    }
-                    catch (Exception e) {
-                        try {
-                            Thread.sleep(5000);
-                        }
-                        catch (InterruptedException ignored) {
-
-                        }
-                        continue;
-                    }
-                }
-                if (finalPrice <= priceDouble) {
-                    Log.i("VALUES", "Price is low. New price = " + finalPrice);
-                    builder.setContentTitle("Price is low at " + finalPrice);
-                    builder.setContentText("Tap to open the product page");
-                    notificationManager.notify(1, builder.build());
-                    statusString = "Stopped";
+                    statusString = "Started. Checking Price.";
                     try {
                         ((TextView) findViewById(R.id.status)).setText(statusString);
                     } catch (Exception ignored) {
-
                     }
-                    return;
-                } else {
-                    statusString = "Price is high. We will keep checking.";
-                    try {
-                        ((TextView) findViewById(R.id.status)).setText(statusString);
-                    } catch (Exception ignored) {
 
+                    if (linkIsForFlipkart) {
+                        try {
+                            inStockVar = inStockFlip(url.getText().toString());
+                        } catch (Exception ignored) {
+                        }
+                    } else {
+                        try {
+                            inStockVar = inStockAmz(url.getText().toString());
+                        } catch (Exception ignored) {
+                        }
                     }
-                    Log.i("VALUES", "Price is high. Price = " + finalPrice);
-                    Log.i("INFO", "Waiting....");
-                    try {
-                        Thread.sleep(120000);
-                    }
-                    catch (InterruptedException ignored) {
 
+                    if (inStockVar) {
+                        try {
+                            priceFromApp = Double.parseDouble(price.getText().toString());
+                        } catch (Exception e) {
+                            statusString = "Error. Make sure the price is a number.";
+                            try {
+                                ((TextView) findViewById(R.id.status)).setText(statusString);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                        if (linkIsForFlipkart) {
+                            try {
+                                priceFromWebsite = findPriceFlip(url.getText().toString());
+                            }
+                            catch (Exception ignored) {
+                            }
+                        } else {
+                            try {
+                                priceFromWebsite = findPriceAmz(url.getText().toString());
+                            }
+                            catch (Exception ignored) {
+                            }
+                        }
+                        if (priceFromApp >= priceFromWebsite) {
+                            Log.i("VALUES", "Price is low. New price = " + priceFromWebsite);
+                            builder.setContentTitle("Price is low at " + priceFromWebsite);
+                            builder.setContentText("Tap to open the product page");
+                            notificationManager.notify(1, builder.build());
+                            statusString = "Stopped";
+                            try {
+                                ((TextView) findViewById(R.id.status)).setText(statusString);
+                            } catch (Exception ignored) {
+                            }
+                            break;
+                        } else {
+                            statusString = "Price is high. We will keep checking.";
+                            try {
+                                ((TextView) findViewById(R.id.status)).setText(statusString);
+                            } catch (Exception ignored) {
+                            }
+                            Log.i("VALUES", "Price is high. Price = " + priceFromWebsite);
+                            Log.i("INFO", "Waiting....");
+                            try {
+                                Thread.sleep(120000);
+                            }
+                            catch (InterruptedException ignored) {
+                            }
+                        }
+                    } else {
+                        statusString = "Product out of stock. We will keep checking.";
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(statusString);
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            Thread.sleep(120000);
+                        }
+                        catch (InterruptedException ignored) {
+                        }
                     }
                 }
 
-            }
 
+            }
         }
+
     }
 
     /*private class MainProcess extends AsyncTask<Void, Void, Void> {
@@ -760,7 +742,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void startFunc(View view) {
 
-
+        isStarted = false;
+        isStarted = true;
 
         Log.i("INFO", "start pressed");
 
@@ -789,11 +772,14 @@ public class MainActivity extends AppCompatActivity {
         //isStarted = false;
         //mp.cancel(true);
         //mp = null;
+
+        isStarted = false;
+
         try {
             mt.interrupt();
         }
         catch (Exception ignored) {
-
+            Log.i("INFO", "interrupt failed.....");
         }
 
         statusString = "Stopped.";
