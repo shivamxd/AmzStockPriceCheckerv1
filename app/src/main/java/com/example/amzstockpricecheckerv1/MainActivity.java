@@ -23,8 +23,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -55,8 +58,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public static boolean inStockAmz(String url) {
+        Document doc = null;
+        Connection conn = Jsoup.connect(url);
+        String avail = "";
+        try {
+            doc = Jsoup.connect(url).get();
+        } catch (IOException e) {
+            //e.printStackTrace();
+        }
+        try {
+            Element availability = doc.getElementById("availability");
+            avail = availability.text();
+        } catch (Exception ignored) {
+
+        }
+        return avail.equals("In stock.");
+    }
     //this function returns true or false based on if the product is in stock
-    public static boolean inStockAmz(String url){
+    /*public static boolean inStockAmz2(String url){
         Document doc = null;  //create a document variable
 
         //connect to the url. this can produce an IO exception, so we need to deal with it
@@ -84,16 +104,16 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
-        System.out.println("Avail = " + avail);
+        //System.out.println("Avail = " + avail);
         //System.out.println(avail);
 
 
         //when the product is out of stock, the availability id contains the following text. I can probably improve this code.
-        /*if (avail.equals("<div id=\"availability\" class=\"a-section a-spacing-base }\"> <span class=\"a-size-medium a-color-price\"> Currently unavailable. </span> \n" +
+        *//*if (avail.equals("<div id=\"availability\" class=\"a-section a-spacing-base }\"> <span class=\"a-size-medium a-color-price\"> Currently unavailable. </span> \n" +
                 " <br>We don't know when or if this item will be back in stock. \n" +
                 "</div>")) {
             return false;
-        }*/
+        }*//*
 
         String[] availArray = avail.split(" ");
 
@@ -103,24 +123,24 @@ public class MainActivity extends AppCompatActivity {
 
 
         for (String s : availArray) {
-            /*if (foundIn && foundstock) {
+            *//*if (foundIn && foundstock) {
                 return true;
-            }*/
+            }*//*
             if (foundCurrently) {
                 return false;
             }
             if (s.equals("Currently")) {
                 foundCurrently = true;
             }
-            /*if (s.equals("In")) {
+            *//*if (s.equals("In")) {
                 foundIn = true;
             }
             if (s.equals("stock")) {
                 foundstock = true;
-            }*/
+            }*//*
         }
         return true;
-    }
+    }*/
 
     public static boolean inStockFlip(String url){
         Document doc = null;  //create a document variable
@@ -263,7 +283,77 @@ public class MainActivity extends AppCompatActivity {
         return Double.parseDouble(String.valueOf(newPrice));
     }
 
-    public static double findPriceAmz(String url) throws IOException {
+
+    public static double findPriceAmz(String url) throws IOException{
+        double price = 0;
+        Document doc = null;
+        Connection conn = Jsoup.connect(url);
+        String avail = "";
+        Element priceElement = null;
+        Elements priceElements = null;
+        boolean usedElementsByClass = false;
+        conn.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54");
+        try {
+            doc = conn.get();
+        } catch (Exception ignored) {
+
+        }
+        try {
+            priceElement = doc.getElementById("corePrice_desktop");
+            //System.out.println(priceElement.text());
+            avail = priceElement.text();
+        } catch (Exception ignored) {
+            usedElementsByClass = true;
+            priceElements = doc.getElementsByClass("a-price-whole");
+            //System.out.println(priceElements.first());
+            try {
+                avail = priceElements.first().text();
+            } catch (Exception e) {
+                avail = "<span class=\"a-price-whole\">999999999<span class=\"a-price-decimal\">.</span></span>";
+            }
+        }
+
+        if (usedElementsByClass) {
+            StringBuilder priceStringBuilder = new StringBuilder();
+            for (int i = 0; i < avail.length() - 1; i++) {
+                priceStringBuilder.append(avail.charAt(i));
+            }
+            String priceString = String.valueOf(priceStringBuilder);
+            StringBuilder priceStringBuilder2 = new StringBuilder();
+            for (int i = 0; i < priceString.length(); i++) {
+                if (priceString.charAt(i) == ',') {
+                    continue;
+                }
+                priceStringBuilder2.append(avail.charAt(i));
+            }
+            priceString = String.valueOf(priceStringBuilder2);
+            price = Double.parseDouble(priceString);
+        } else {
+            int rsCount = 0;
+            int i = 0;
+            while (rsCount < 3) {
+                if (avail.charAt(i) == '₹') {
+                    rsCount++;
+                }
+                i++;
+            }
+            StringBuilder priceStringBuilder = new StringBuilder();
+            while (avail.charAt(i) != '₹') {
+                if (avail.charAt(i) == ',') {
+                    i++;
+                    //System.out.println('.');
+                    continue;
+                }
+                priceStringBuilder.append(avail.charAt(i));
+                //System.out.println(avail.charAt(i));
+                i++;
+            }
+            price = Double.parseDouble(String.valueOf(priceStringBuilder));
+        }
+
+        return price;
+    }
+    public static double findPriceAmz2(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
         String price = doc.getElementsByClass("a-price-whole").outerHtml();
 
@@ -424,7 +514,25 @@ public class MainActivity extends AppCompatActivity {
 
             if (sw.isChecked()) {
 
-
+                try {
+                    if (url.getText().toString().charAt(12) != 'f' && url.getText().toString().charAt(12) != 'a') {
+                        statusString = "Error. Check URL";
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(statusString);
+                        } catch (Exception ignored) {
+                        }
+                        isStarted = false;
+                        return;
+                    }
+                } catch (Exception e) {
+                    statusString = "Error. Check URL";
+                    try {
+                        ((TextView) findViewById(R.id.status)).setText(statusString);
+                    } catch (Exception ignored) {
+                    }
+                    isStarted = false;
+                    return;
+                }
                 try {
                     linkIsForFlipkart = url.getText().toString().charAt(12) == 'f';
                 } catch (Exception ignored) {
@@ -478,15 +586,36 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             } else {
+                try {
+                    if (url.getText().toString().charAt(12) != 'f' && url.getText().toString().charAt(12) != 'a') {
+                        statusString = "Error. Check URL";
+                        try {
+                            ((TextView) findViewById(R.id.status)).setText(statusString);
+                        } catch (Exception ignored) {
+                        }
+                        isStarted = false;
+                        return;
+                    }
+                } catch (Exception e) {
+                    statusString = "Error. Check URL";
+                    try {
+                        ((TextView) findViewById(R.id.status)).setText(statusString);
+                    } catch (Exception ignored) {
+                    }
+                    isStarted = false;
+                    return;
+                }
+
+                try {
+                    linkIsForFlipkart = url.getText().toString().charAt(12) == 'f';
+                } catch (Exception ignored) {
+                }
                 while (true) {
                     if (!isStarted) {
                         break;
                     }
 
-                    try {
-                        linkIsForFlipkart = url.getText().toString().charAt(12) == 'f';
-                    } catch (Exception ignored) {
-                    }
+
 
                     statusString = "Started. Checking Price.";
                     try {
@@ -541,7 +670,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             break;
                         } else {
-                            statusString = "Price is high. We will keep checking.";
+                            statusString = "Price is high("+ priceFromWebsite +"). We will keep checking.";
                             try {
                                 ((TextView) findViewById(R.id.status)).setText(statusString);
                             } catch (Exception ignored) {
