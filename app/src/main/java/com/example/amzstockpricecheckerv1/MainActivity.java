@@ -353,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
 
         return price;
     }
-    public static double findPriceAmz2(String url) throws IOException {
+    /*public static double findPriceAmz2(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
         String price = doc.getElementsByClass("a-price-whole").outerHtml();
 
@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
             return 99999999;
         }
         return Double.parseDouble(String.valueOf(newPrice));
-    }
+    }*/
 
 
 
