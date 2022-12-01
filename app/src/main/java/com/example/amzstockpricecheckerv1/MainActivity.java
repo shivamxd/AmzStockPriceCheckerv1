@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isStarted;
     public double priceFromApp = 999999999;
     public boolean linkIsForFlipkart = false;
+    public int checkEveryMilliSec = 120000;
     //MainProcess mp;
     MainThread mt;
     //String statusString = "Stopped";
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static boolean inStockAmz(String url) {
+    public static boolean inStockAmzOld(String url) {
         Document doc = null;
         Connection conn = Jsoup.connect(url);
         String avail = "";
@@ -75,6 +76,36 @@ public class MainActivity extends AppCompatActivity {
         }
         return avail.equals("In stock.");
     }
+
+    public static boolean inStockAmz(String url) {
+        Document doc = null;
+        Connection conn = Jsoup.connect(url);
+        String avail = "";
+        //conn.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54");
+        conn.userAgent("Mozilla/5.0 (Linux; Android 13; SM-A528B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36 EdgA/107.0.1418.43");
+        try {
+            doc = conn.get();
+        } catch (Exception ignored) {
+
+        }
+        try {
+            Elements availability = doc.getElementsByClass("a-size-medium a-color-price");
+            avail = availability.text();
+        } catch (Exception ignored) {
+
+        }
+        //System.out.println(avail);
+        //return avail.equals("In stock.");
+        boolean inStock = false;
+        try {
+            inStock = !(avail.charAt(0) == 'C');
+        } catch (Exception e) {
+            return true;
+        }
+        return inStock;
+    }
+
+
     //this function returns true or false based on if the product is in stock
     /*public static boolean inStockAmz2(String url){
         Document doc = null;  //create a document variable
@@ -580,7 +611,7 @@ public class MainActivity extends AppCompatActivity {
                         } catch (Exception ignored) {
                         }
                         try {
-                            Thread.sleep(120000);
+                            Thread.sleep(checkEveryMilliSec);
                         } catch (InterruptedException ignored) {
                         }
                     }
@@ -678,7 +709,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.i("VALUES", "Price is high. Price = " + priceFromWebsite);
                             Log.i("INFO", "Waiting....");
                             try {
-                                Thread.sleep(120000);
+                                Thread.sleep(checkEveryMilliSec);
                             }
                             catch (InterruptedException ignored) {
                             }
@@ -690,7 +721,7 @@ public class MainActivity extends AppCompatActivity {
                         } catch (Exception ignored) {
                         }
                         try {
-                            Thread.sleep(120000);
+                            Thread.sleep(checkEveryMilliSec);
                         }
                         catch (InterruptedException ignored) {
                         }
