@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
         Element priceElement = null;
         Elements priceElements = null;
         boolean usedElementsByClass = false;
-        conn.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54");
+        conn.userAgent("Mozilla/5.0 (Linux; Android 13; SM-A528B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36 EdgA/107.0.1418.43");
         try {
             doc = conn.get();
         } catch (Exception ignored) {
