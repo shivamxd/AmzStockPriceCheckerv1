@@ -344,9 +344,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        Log.i("INFO", "ZZZZZZZZZZZZ price = " + avail);
+
         if (usedElementsByClass) {
             StringBuilder priceStringBuilder = new StringBuilder();
-            for (int i = 0; i < avail.length() - 1; i++) {
+            for (int i = 0; i < avail.length(); i++) {
+                Log.i("INFO", "used a-price-whole");
                 priceStringBuilder.append(avail.charAt(i));
             }
             String priceString = String.valueOf(priceStringBuilder);
