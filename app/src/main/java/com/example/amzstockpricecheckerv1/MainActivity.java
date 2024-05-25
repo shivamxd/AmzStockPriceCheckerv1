@@ -433,18 +433,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.i("INFO", "This app was created by Shivam. Twitter - @shivam_ggwp");
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
 
-
-
-
-
+        ((EditText) findViewById(R.id.URL)).setText(intent.getStringExtra(Intent.EXTRA_TEXT));
 
         //EditText outputFinal = (EditText) findViewById(R.id.output);
 
 
 
     }
+
 
     /*private class CheckStock extends AsyncTask<Void, Void, Void> {
         boolean stock;
