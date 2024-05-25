@@ -29,7 +29,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,11 +45,7 @@ public class MainActivity extends AppCompatActivity {
     public double priceFromApp = 999999999;
     public boolean linkIsForFlipkart = false;
     public int checkEveryMilliSec = 120000;
-    //MainProcess mp;
     MainThread mt;
-    //String statusString = "Stopped";
-    //String stoppedString = "Stopped";
-    //String startedString = "Started";
     public String statusString = "...";
 
 
@@ -58,30 +59,10 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-
-    public static boolean inStockAmzOld(String url) {
-        Document doc = null;
-        Connection conn = Jsoup.connect(url);
-        String avail = "";
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-        try {
-            Element availability = doc.getElementById("availability");
-            avail = availability.text();
-        } catch (Exception ignored) {
-
-        }
-        return avail.equals("In stock.");
-    }
-
     public static boolean inStockAmz(String url) {
         Document doc = null;
         Connection conn = Jsoup.connect(url);
         String avail = "";
-        //conn.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54");
         conn.userAgent("Mozilla/5.0 (Linux; Android 13; SM-A528B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36 EdgA/107.0.1418.43");
         try {
             doc = conn.get();
@@ -107,190 +88,77 @@ public class MainActivity extends AppCompatActivity {
 
 
     //this function returns true or false based on if the product is in stock
-    /*public static boolean inStockAmz2(String url){
-        Document doc = null;  //create a document variable
 
-        //connect to the url. this can produce an IO exception, so we need to deal with it
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            //e.printStackTrace();
+
+    public static boolean inStockFlip(String url) throws IOException {
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+// optional request header
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        int responseCode = con.getResponseCode();
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
         }
+        in.close();
+        String html = response.toString();
+
+
+
+
+        //
+        Document doc = Jsoup.parse(html);
 
         String avail = "";   //this string will contain the text in the availability id
 
         //get the text in the availability class. This can throw a null pointer exception.
         try {
-            avail = doc.getElementById("availability").outerHtml();
+            avail = doc.getElementsByClass("_3GOL67 gTLS5r").outerHtml();
         }
         catch (NullPointerException ignored)
         {
 
         }
-
-        if (avail.isEmpty()) {
-            try {
-                avail = doc.getElementsByClass("a-section a-spacing-base }").outerHtml();
-            } catch (Exception ignored) {
-
-            }
-        }
-        //System.out.println("Avail = " + avail);
         //System.out.println(avail);
+        System.out.println(avail);
 
 
         //when the product is out of stock, the availability id contains the following text. I can probably improve this code.
-        *//*if (avail.equals("<div id=\"availability\" class=\"a-section a-spacing-base }\"> <span class=\"a-size-medium a-color-price\"> Currently unavailable. </span> \n" +
-                " <br>We don't know when or if this item will be back in stock. \n" +
+        if (avail.equals("<div class=\"_3GOL67 gTLS5r\">\n" +
+                " <button class=\"QqFHMw AMnSvF v6sqKe\">NOTIFY ME</button>\n" +
+                " <div class=\"IMj1Kv v6sqKe\">\n" +
+                "  Get notified when this item comes back in stock.\n" +
+                " </div>\n" +
                 "</div>")) {
-            return false;
-        }*//*
-
-        String[] availArray = avail.split(" ");
-
-        boolean foundCurrently = false;
-        //boolean foundIn = false;
-        //boolean foundstock = false;
-
-
-        for (String s : availArray) {
-            *//*if (foundIn && foundstock) {
-                return true;
-            }*//*
-            if (foundCurrently) {
-                return false;
-            }
-            if (s.equals("Currently")) {
-                foundCurrently = true;
-            }
-            *//*if (s.equals("In")) {
-                foundIn = true;
-            }
-            if (s.equals("stock")) {
-                foundstock = true;
-            }*//*
-        }
-        return true;
-    }*/
-
-    public static boolean inStockFlip(String url){
-        Document doc = null;  //create a document variable
-
-        //connect to the url. this can produce an IO exception, so we need to deal with it
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-
-        String avail = "";   //this string will contain the text in the availability id
-
-        //get the text in the availability class. This can throw a null pointer exception.
-        try {
-            avail = doc.getElementsByClass("_2KpZ6l _2uS5ZX _2Dfasx").outerHtml();
-        }
-        catch (NullPointerException ignored)
-        {
-
-        }
-        //System.out.println(avail);
-
-
-        //when the product is out of stock, the availability id contains the following text. I can probably improve this code.
-        if (avail.equals("<button class=\"_2KpZ6l _2uS5ZX _2Dfasx\">NOTIFY ME</button>")) {
             return false;
         }
         return true;
     }
 
-    /*public static double findPrice(String url){
-        Document doc = null;
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-        String price = "";
-        try {
-            price = doc.getElementsByClass("a-price-whole").outerHtml();
-        } catch (NullPointerException ignored) {
-            Log.i("INFO", "caught null exception 1");
-        }
 
-        if (price.isEmpty()) {
-            try {
-                price = doc.getElementsByClass("a-offscreen").outerHtml();
-            } catch (NullPointerException ignored) {
-                Log.i("INFO", "caught null exception 2");
-                price = "99999999999";
-            }
-        }
-
-        Log.i("INFO", "XXXXXXXXXXX price = " + price);
-
-        //System.out.println(title);
-        StringBuilder newPrice = new StringBuilder();
-
-        boolean numFound = false;
-
-        for (int i = 0; i < price.length(); i++) {
-
-            if (numFound && price.charAt(i) == '<') {
-                break;
-            }
-
-            if (isNumber(price.charAt(i))) {
-                if (price.charAt(i) == ',') {
-                    continue;
-                }
-                newPrice.append(price.charAt(i));
-                numFound = true;
-            }
-        }
-        Log.i("INFO", "ZZZZZZZZZZZZ price = " + newPrice);
-        return Double.parseDouble(String.valueOf(newPrice));
-    }*/
-
-    /*public static double findPrice2(String url){
-        Document doc = null;
-        try {
-            doc = Jsoup.connect(url).get();
-        } catch (IOException e) {
-            //e.printStackTrace();
-        }
-        String price = "";
-        try {
-            price = doc.getElementsByClass("a-price-whole").outerHtml();
-        } catch (Exception e) {
-
-        }
-
-        //System.out.println("price = " + price);
-        //System.out.println(title);
-        StringBuilder newPrice = new StringBuilder();
-
-        boolean numFound = false;
-
-        for (int i = 0; i < price.length(); i++) {
-
-            if (numFound && price.charAt(i) == '<') {
-                break;
-            }
-
-            if (isNumber(price.charAt(i))) {
-                if (price.charAt(i) == ',') {
-                    continue;
-                }
-                newPrice.append(price.charAt(i));
-                numFound = true;
-            }
-        }
-        return Integer.parseInt(String.valueOf(newPrice));
-    }*/
 
     public static double findPriceFlip(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
-        String price = doc.getElementsByClass("_30jeq3 _16Jk6d").outerHtml();
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+// optional request header
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        int responseCode = con.getResponseCode();
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        String html = response.toString();
+
+
+
+        //
+        Document doc = Jsoup.parse(html);
+        String price = doc.getElementsByClass("Nx9bqj CxhGGd").outerHtml();
         System.out.println("price = " + price);
         //System.out.println(title);
         StringBuilder newPrice = new StringBuilder();
@@ -311,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 numFound = true;
             }
         }
+        System.out.println(Double.parseDouble(String.valueOf(newPrice)));
         return Double.parseDouble(String.valueOf(newPrice));
     }
 
@@ -387,42 +256,7 @@ public class MainActivity extends AppCompatActivity {
 
         return price;
     }
-    /*public static double findPriceAmz2(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
-        String price = doc.getElementsByClass("a-price-whole").outerHtml();
 
-        Log.i("INFO", "price a price whole = " + price);
-        //System.out.println("price = " + price);
-        //System.out.println(title);
-        if (price.isEmpty()) {
-            Log.i("INFO", "PRICE IS EMPTYYYYYYYY");
-            price = doc.getElementsByClass("a-offscreen").outerHtml();
-            Log.i("INFO", "off screen price = " + price);
-        }
-        StringBuilder newPrice = new StringBuilder();
-
-        boolean numFound = false;
-
-        for (int i = 0; i < price.length(); i++) {
-
-            if (numFound && price.charAt(i) == '<') {
-                break;
-            }
-
-            if (isNumber(price.charAt(i))) {
-                if (price.charAt(i) == ',') {
-                    continue;
-                }
-                newPrice.append(price.charAt(i));
-                numFound = true;
-            }
-        }
-        Log.i("INFO", "33333333333 price = " + String.valueOf(newPrice));
-        if (String.valueOf(newPrice).isEmpty()) {
-            return 99999999;
-        }
-        return Double.parseDouble(String.valueOf(newPrice));
-    }*/
 
 
 
@@ -446,61 +280,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /*private class CheckStock extends AsyncTask<Void, Void, Void> {
-        boolean stock;
-        @Override
-        protected void onPreExecute() {
-           // super.OnPreExecute();
-        }
-        @Override
-        protected Void doInBackground(Void... voids) {
 
-            EditText url = (EditText) findViewById(R.id.URL);
-            stock = inStock(url.getText().toString());
-
-           // stockVar = stock;
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            stockVar = stock;
-        }
-    }
-
-
-    private class PriceFind extends AsyncTask<Void, Void, Void>{
-        double price;
-        @Override
-        protected void onPreExecute() {
-            // super.OnPreExecute();
-        }
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            EditText url = (EditText) findViewById(R.id.URL);
-            boolean stock = inStock(url.getText().toString());
-            //double price;
-
-            if (stock) {
-                price = findPrice(url.getText().toString());
-            } else {
-                price = -1;
-            }
-
-            //finalPrice = price;
-
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            finalPrice = price;
-        }
-    }*/
 
     private class MainThread extends Thread {
         public void run() {
@@ -737,171 +517,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /*private class MainProcess extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            // super.OnPreExecute();
-        }
-        @Override
-        protected Void doInBackground(Void... voids) {
 
-
-
-            EditText url = (EditText) findViewById(R.id.URL);
-            EditText price = (EditText) findViewById(R.id.price);
-
-            double priceDouble = Double.parseDouble(price.getText().toString());
-
-            @SuppressLint("UseSwitchCompatOrMaterialCode") Switch sw = (Switch) findViewById(R.id.switch1);
-
-            boolean isFlip = false;
-
-            if (url.getText().toString().charAt(12) == 'f') {
-                isFlip = true;
-            }
-
-
-
-
-        *//*CheckStock cs = new CheckStock();
-        cs.execute();
-
-        if (stockVar) {
-            Log.i("INFO", "In stock");
-        } else {
-            Log.i("INFO", "Not in stock");
-        }*//*
-
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel channel = new NotificationChannel("PriceStock", "PriceStock", NotificationManager.IMPORTANCE_DEFAULT);
-                NotificationManager manager = getSystemService(NotificationManager.class);
-                manager.createNotificationChannel(channel);
-            }
-
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, "PriceStock");
-            builder.setSmallIcon(R.drawable.logo);
-            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-            builder.setAutoCancel(true);
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
-
-
-
-            //test code
-
-            *//*Intent resultIntent = new Intent(Intent.ACTION_VIEW);
-            resultIntent.setData(Uri.parse(url.getText().toString()));
-
-            PendingIntent pending = PendingIntent.getActivity(MainActivity.this, 1, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(pending);*//*
-
-
-
-            //test code end
-
-
-
-
-            if (sw.isChecked()) {
-                while (true) {
-                    if (!isStarted) {
-                        break;
-                    }
-                    if (isFlip) {
-                        stockVar = inStockFlip(url.getText().toString());
-                    } else {
-                        stockVar = inStockAmz(url.getText().toString());
-                    }
-                    if (stockVar) {
-                        Log.i("INFO", "In stock");
-                        builder.setContentTitle("The item is back in stock");
-                        builder.setContentText("Tap to open the product page.");
-                        notificationManager.notify(1, builder.build());
-                        isStarted = false;
-                        break;
-                    } else {
-                        Log.i("INFO", "Not in stock");
-                        try {
-                            TimeUnit.SECONDS.sleep(120);
-                        }
-                        catch (InterruptedException ignored) {
-
-                        }
-
-                    }
-                }
-                *//*CheckStock cs = new CheckStock();
-                cs.execute();*//*
-
-            } else {
-                while (true) {
-                    if (!isStarted) {
-                        break;
-                    }
-                    if (isFlip) {
-                        stockVar = inStockFlip(url.getText().toString());
-                    } else {
-                        stockVar = inStockAmz(url.getText().toString());
-                    }
-                    if (stockVar) {
-                        try {
-                            if (isFlip) {
-                                finalPrice = findPriceFlip(url.getText().toString());
-                            } else {
-                                finalPrice = findPriceAmz(url.getText().toString());
-                            }
-                        } catch (IOException e) {
-                            //e.printStackTrace();
-                        }
-                    } else {
-                        finalPrice = -1;
-                    }
-                    if (stockVar) {
-                        if (finalPrice >= 0) {
-                            if (finalPrice <= priceDouble) {
-                                Log.i("VALUES", "Price is low. New price = " + finalPrice);
-                                builder.setContentTitle("Price is low.");
-                                builder.setContentText("Current price = " + finalPrice);
-                                notificationManager.notify(1, builder.build());
-                                isStarted = false;
-                                break;
-                            } else {
-                                Log.i("VALUES", "Price is high. Price = " + finalPrice);
-                                Log.i("INFO", "Waiting....");
-                                try {
-                                    TimeUnit.SECONDS.sleep(120);
-                                }
-                                catch (InterruptedException ignored) {
-
-                                }
-                            }
-                        } else {
-                            Log.i("INFO", "Out of stock");
-                            Log.i("INFO", "Waiting....");
-                            try {
-                                TimeUnit.SECONDS.sleep(120);
-                            }
-                            catch (InterruptedException ignored) {
-
-                            }
-                        }
-                    }
-                }
-                *//*PriceFind pf = new PriceFind();
-                pf.execute();*//*
-
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-
-        }
-    }*/
 
     public void startFunc(View view) {
 
