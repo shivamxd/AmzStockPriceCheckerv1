@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public static boolean inStockFlip(String url) throws IOException {
+        url = getShortURL(url);
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 // optional request header
@@ -137,9 +138,23 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public static String getShortURL(String url) {
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < url.length(); i++) {
+            if (url.charAt(i) == '?') {
+                break;
+            }
+            res.append(url.charAt(i));
+        }
+        return res.toString();
+    }
+
 
 
     public static double findPriceFlip(String url) throws IOException {
+        url = getShortURL(url);
+
+
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 // optional request header
