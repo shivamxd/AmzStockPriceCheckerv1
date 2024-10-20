@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static boolean inStockAmz(String url) {
+        url = getShortURL(url);
         Document doc = null;
         Connection conn = Jsoup.connect(url);
         String avail = "";
@@ -67,13 +68,14 @@ public class MainActivity extends AppCompatActivity {
         try {
             doc = conn.get();
         } catch (Exception ignored) {
-
+            //System.out.println("error1");
         }
         try {
-            Elements availability = doc.getElementsByClass("a-size-medium a-color-price");
+            Elements availability = doc.getElementsByClass("a-size-medium a-color-success");
             avail = availability.text();
+            //System.out.println(avail);
         } catch (Exception ignored) {
-
+            //System.out.println("error2");
         }
         //System.out.println(avail);
         //return avail.equals("In stock.");
@@ -81,9 +83,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             inStock = !(avail.charAt(0) == 'C');
         } catch (Exception e) {
+            //System.out.println("error3");
             return true;
         }
         return inStock;
+        //System.out.println("yes");
     }
 
 
